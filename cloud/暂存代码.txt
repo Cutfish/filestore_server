@@ -1,0 +1,18 @@
+        ListNode* H = new ListNode();
+        ListNode* p = head;
+        H->next = head; 
+
+        int count = 0;
+        while (p) {
+            count++;
+            p = p->next;
+        }
+        p = H;
+
+        int index = count - n;
+        while (index--) {
+            p = p->next;
+        }
+        p->next = p->next->next;
+        return H->next;
+    }

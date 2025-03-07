@@ -20,7 +20,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, "internal server error")
 			return
 		}
-		io.WriteString(w, string(data))
+		w.Write(data)
 	} else if r.Method == "POST" {
 		//接收文件流并保存到本地
 		file, head, err := r.FormFile("file")
@@ -51,7 +51,8 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 		newFile.Seek(0, 0)
 		fileMeta.FileShal = util.FileSha1(newFile)
-		meta.UpdateFileMeta(fileMeta)
+		// meta.UpdateFileMeta(fileMeta)
+		_ = meta.UpdateFileMetaDB(fileMeta)
 
 		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 	}
@@ -67,7 +68,12 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	// filehash := r.Form["filehash"][0]
 	filehash := r.Form.Get("filehash")
-	fMeta := meta.GetFileMeta(filehash)
+	// fMeta := meta.GetFileMeta(filehash)
+	fMeta, err := meta.GetFileMetaDB(filehash)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	data, err := json.Marshal(fMeta)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
